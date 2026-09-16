@@ -185,7 +185,13 @@ pipeline {
                 }
             }
         }
-
+        stage('Approve Production Deploy') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                input message: "Deploy ${IMAGE_TAG} to production?", ok: 'Deploy'
+                    }
+                }
+            }
         stage('Verify Deployment Rollout') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
