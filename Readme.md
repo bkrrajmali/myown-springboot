@@ -55,3 +55,9 @@ kubectl create secret docker-registry acr-secret \
         }
     }
 }
+
+
+az aks get-credentials \
+  --resource-group <your-resource-group> \
+  --name <your-aks-cluster> \
+  --file ./jenkins-kubeconfig
