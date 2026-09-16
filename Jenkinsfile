@@ -46,6 +46,7 @@ pipeline {
                 withSonarQubeEnv('sonar-server') {
                     sh '''
                         mvn sonar:sonar \
+                            -Dsonar.organization=bkrrajmali \
                             -Dsonar.projectKey=myown-springboot \
                             -Dsonar.projectName=myown-springboot \
                             -Dsonar.java.binaries=target/classes
