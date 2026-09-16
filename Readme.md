@@ -26,3 +26,32 @@ wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dear
 echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
 sudo apt-get update && sudo apt-get install -y trivy
 trivy --version
+
+
+sudo usermod -aG docker jenkins
+sudo systemctl restart jenkins
+
+sudo -u jenkins docker ps
+
+
+kubectl create secret docker-registry acr-secret \
+  --docker-server=democontainerregi.azurecr.io \
+  --docker-username=<acr-username> \
+  --docker-password=<acr-password>
+
+  stage('Create ACR Secret') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'acr-creds',
+                                          usernameVariable: 'ACR_USER',
+                                          passwordVariable: 'ACR_PASS'),
+                         file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+            sh '''
+                kubectl create secret docker-registry acr-secret \
+                  --docker-server=$ACR_SERVER \
+                  --docker-username="$ACR_USER" \
+                  --docker-password="$ACR_PASS" \
+                  --dry-run=client -o yaml | kubectl apply -f -
+            '''
+        }
+    }
+}
