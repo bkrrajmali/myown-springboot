@@ -5,6 +5,12 @@ pipeline {
         maven 'maven'
     }
 
+    environment {
+    ACR_SERVER = 'democontainerregi.azurecr.io'
+    IMAGE_NAME = 'petclinic'
+    IMAGE_TAG  = "latest"
+}
+
     stages {
 
         stage('Checkout from Git') {
@@ -100,4 +106,46 @@ pipeline {
             }
         }
     }
+
+        stage('Docker Build') {
+    steps {
+        sh '''
+            docker build -t $ACR_SERVER/$IMAGE_NAME:$IMAGE_TAG \
+                         -t $ACR_SERVER/$IMAGE_NAME:latest .
+        '''
+    }
+}
+
+stage('Trivy Image Scan') {
+    steps {
+        sh '''
+            trivy image --severity HIGH,CRITICAL \
+                        --ignore-unfixed \
+                        --exit-code 0 \
+                        --format table \
+                        -o trivy-image-report.txt \
+                        $ACR_SERVER/$IMAGE_NAME:$IMAGE_TAG
+        '''
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'trivy-image-report.txt', allowEmptyArchive: true
+        }
+    }
+}
+
+stage('Push to ACR') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'acr-creds',
+                                          usernameVariable: 'ACR_USER',
+                                          passwordVariable: 'ACR_PASS')]) {
+            sh '''
+                echo "$ACR_PASS" | docker login $ACR_SERVER -u "$ACR_USER" --password-stdin
+                docker push $ACR_SERVER/$IMAGE_NAME:$IMAGE_TAG
+                docker push $ACR_SERVER/$IMAGE_NAME:latest
+                docker logout $ACR_SERVER
+            '''
+        }
+    }
+  }
 }
