@@ -47,5 +47,22 @@ pipeline {
                 }
             }
         }
+        stage('Upload to Nexus') {
+    steps {
+        nexusArtifactUploader(
+            nexusVersion: 'nexus3',
+            protocol: 'http',
+            nexusUrl: '192.168.0.228:8081',
+            groupId: 'org.springframework.samples',
+            version: '6.2.5',
+            repository: 'maven-releases',
+            credentialsId: 'nexus-creds',
+            artifacts: [
+                [artifactId: 'spring-framework-petclinic', classifier: '', file: 'target/petclinic.war', type: 'war'],
+                [artifactId: 'spring-framework-petclinic', classifier: '', file: 'pom.xml', type: 'pom']
+            ]
+        )
+    }
+}
     }
 }
