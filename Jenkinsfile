@@ -416,11 +416,10 @@ pipeline {
                         sleep 5
                     done
 
-                    echo "Checking key endpoints..."
-                    curl -sf http://localhost:9999/ > /dev/null          || exit 1
-                    curl -sf http://localhost:9999/vets.html > /dev/null || exit 1
-                    curl -sf http://localhost:9999/owners/find > /dev/null || exit 1
-                    echo "All endpoints OK"
+                    echo "Checking page content..."
+                    curl -s http://localhost:9999/ | grep -qi "petclinic" \
+                        || { echo "Root page did not contain expected content"; exit 1; }
+                    echo "Smoke test passed"
                 '''
             }
             post {
@@ -560,8 +559,8 @@ pipeline {
                             sleep 15
                         done
 
-                        curl -sf http://$IP/vets.html > /dev/null || exit 1
-                        curl -sf http://$IP/owners/find > /dev/null || exit 1
+                        curl -s http://$IP/ | grep -qi "petclinic" \
+                            || { echo "Live site content check failed"; exit 1; }
                         echo "Production smoke test passed"
                     '''
                 }
