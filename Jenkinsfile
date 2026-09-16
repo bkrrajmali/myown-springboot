@@ -8,7 +8,7 @@ pipeline {
     environment {
         ACR_SERVER       = 'democontainerregi.azurecr.io'
         IMAGE_NAME       = 'petclinic'
-        IMAGE_TAG        = "${BUILD_NUMBER}"
+        IMAGE_TAG        = "latest"
         DEPLOYMENT_NAME  = 'petclinic'
         EMAIL_FROM       = 'bkrraj2021@gmail.com'
         EMAIL_RECIPIENTS = 'bkrraj@gmail.com'
