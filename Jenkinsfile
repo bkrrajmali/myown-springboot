@@ -69,5 +69,10 @@ pipeline {
         )
     }
 }
+stage('Trivy Artifact Scan') {
+    steps {
+        sh 'trivy fs --scanners vuln --format table -o trivy-war-report.txt target/'
+    }
+}
     }
 }

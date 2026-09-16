@@ -5,3 +5,24 @@ Create a token in SonarQube — My Account → Security → Generate Token (type
 Add it to Jenkins — Manage Jenkins → Credentials → Add → kind Secret text, paste the token, ID something like sonar-token.
 Register the server — Manage Jenkins → System → SonarQube servers → Add. Name it exactly sonar-server (must match the string in withSonarQubeEnv), URL e.g. http://<sonar-host>:9000, and pick the credential from step 3. Tick "Environment variables".
 Add the webhook — this is what makes waitForQualityGate work. In SonarQube: Administration → Configuration → Webhooks → Create, URL http://<jenkins-host>:8080/sonarqube-webhook/ (trailing slash matters). Without it the Quality Gate stage just hangs until the timeout.
+
+
+Install Nexus Artifact Uploader from the plugin manager, and add a Username with password credential with ID nexus-creds. how to do installed plugin next
+
+Plugin's installed. Two things left: create the credential, then add the stage.
+
+Create the credential
+Manage Jenkins → Credentials → System → Global credentials (unrestricted) → Add Credentials
+
+Kind: Username with password
+Username: your Nexus login (usually admin)
+Password: your Nexus password
+ID: nexus-creds — type this in yourself, don't leave it blank, because the pipeline references it by this exact string
+Description: anything, e.g. "Nexus deploy account"
+
+
+sudo apt-get install -y wget apt-transport-https gnupg
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+sudo apt-get update && sudo apt-get install -y trivy
+trivy --version
