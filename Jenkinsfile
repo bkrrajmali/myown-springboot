@@ -8,7 +8,7 @@ pipeline {
         stage ('Checkout from Git') 
         {
             steps {
-                git branch: 'prod' , url: 'https://github.com/bkrrajmali/springbootjavapp.git'
+                git branch: 'prod' , url: 'https://github.com/bkrrajmali/myown-springboot.git'
             }
         }
         stage ('Validate with Maven') 
