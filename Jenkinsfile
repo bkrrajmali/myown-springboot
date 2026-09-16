@@ -47,9 +47,14 @@ pipeline {
                 }
             }
         }
-        stage('Upload to Nexus') {
+        stage('Package with Maven') {
     steps {
-        nexusArtifactUploader(
+        sh 'mvn package -DskipTests'
+    }
+}
+        stage('Upload to Nexus') {
+            steps {
+            nexusArtifactUploader(
             nexusVersion: 'nexus3',
             protocol: 'http',
             nexusUrl: '192.168.0.228:8081',
