@@ -157,6 +157,23 @@ pipeline {
             }
         }
 
+        stage('Create ACR Pull Secret') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'acr-creds',
+                                                  usernameVariable: 'ACR_USER',
+                                                  passwordVariable: 'ACR_PASS'),
+                                 file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh '''
+                        kubectl create secret docker-registry acr-secret \
+                            --docker-server=$ACR_SERVER \
+                            --docker-username="$ACR_USER" \
+                            --docker-password="$ACR_PASS" \
+                            --dry-run=client -o yaml | kubectl apply -f -
+                    '''
+                }
+            }
+        }
+
         stage('Deploy to AKS') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
@@ -196,7 +213,7 @@ pipeline {
                         "to": [{"email": "${EMAIL_RECIPIENTS}"}],
                         "subject": "SUCCESS: Jenkins Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                         "textContent": "Good news!\\n\\nThe pipeline ${env.JOB_NAME} build #${env.BUILD_NUMBER} completed successfully, and the deployment ${DEPLOYMENT_NAME} rolled out successfully to AKS.\\n\\nBuild URL: ${env.BUILD_URL}"
-                      }'
+                      }' || true
                     """
                 }
             }
@@ -214,7 +231,7 @@ pipeline {
                         "to": [{"email": "${EMAIL_RECIPIENTS}"}],
                         "subject": "FAILED: Jenkins Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                         "textContent": "The pipeline ${env.JOB_NAME} build #${env.BUILD_NUMBER} FAILED.\\n\\nThis could be due to a build/deploy step failing, or the deployment ${DEPLOYMENT_NAME} failing to roll out successfully in AKS (check the Verify Deployment Rollout stage logs).\\n\\nBuild URL: ${env.BUILD_URL}\\nConsole Log: ${env.BUILD_URL}console"
-                      }'
+                      }' || true
                     """
                 }
             }
